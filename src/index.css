@@ -8,85 +8,85 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 0 0% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 0 0% 18%;
 
-    /* TechSanta primary red - Christmas theme */
-    --primary: 0 84% 50%;
+    /* TechSanta primary red - South Sudanese spirit */
+    --primary: 0 67% 51%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 0 84% 60%;
-    --primary-dark: 0 84% 40%;
+    --primary-light: 0 67% 61%;
+    --primary-dark: 0 67% 41%;
 
-    /* Metallic silver accents */
-    --secondary: 0 0% 90%;
-    --secondary-foreground: 0 0% 20%;
+    /* Charcoal accents */
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 0 70% 95%;
-    --accent-foreground: 0 84% 45%;
+    --accent: 0 67% 96%;
+    --accent-foreground: 0 67% 51%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 67% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 88%;
-    --input: 0 0% 88%;
-    --ring: 0 84% 50%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 67% 51%;
 
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(0, 84%, 50%), hsl(0, 84%, 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(0, 0%, 95%), hsl(0, 0%, 98%));
-    --gradient-hero: linear-gradient(135deg, hsl(0, 84%, 50%) 0%, hsl(0, 70%, 45%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(0, 67%, 51%), hsl(0, 67%, 61%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0, 0%, 96%), hsl(0, 0%, 100%));
+    --gradient-hero: linear-gradient(135deg, hsl(0, 67%, 51%) 0%, hsl(0, 67%, 41%) 100%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1);
-    --shadow-glow: 0 0 30px hsl(0 84% 50% / 0.3);
+    --shadow-glow: 0 0 30px hsl(0 67% 51% / 0.3);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 0 84% 50%;
+    --sidebar-foreground: 0 0% 18%;
+    --sidebar-primary: 0 67% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-accent-foreground: 0 0% 18%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 84% 50%;
+    --sidebar-ring: 0 67% 51%;
 
     /* Chart colors */
-    --chart-1: 0 84% 50%;
-    --chart-2: 0 70% 60%;
-    --chart-3: 0 0% 70%;
-    --chart-4: 0 60% 70%;
-    --chart-5: 0 0% 85%;
+    --chart-1: 0 67% 51%;
+    --chart-2: 0 67% 61%;
+    --chart-3: 0 0% 18%;
+    --chart-4: 0 67% 71%;
+    --chart-5: 0 0% 60%;
   }
 
   .dark {
-    --background: 0 0% 8%;
+    --background: 0 0% 10%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 12%;
+    --card: 0 0% 14%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 12%;
+    --popover: 0 0% 14%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 84% 55%;
+    --primary: 0 67% 55%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 0 84% 65%;
-    --primary-dark: 0 84% 45%;
+    --primary-light: 0 67% 65%;
+    --primary-dark: 0 67% 45%;
 
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 18%;
     --muted-foreground: 0 0% 60%;
@@ -94,35 +94,35 @@ All colors MUST be HSL.
     --accent: 0 0% 18%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 67% 50%;
+    --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 0 84% 55%;
+    --ring: 0 67% 55%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(0, 84%, 55%), hsl(0, 84%, 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(0, 0%, 12%), hsl(0, 0%, 18%));
-    --gradient-hero: linear-gradient(135deg, hsl(0, 84%, 45%) 0%, hsl(0, 70%, 35%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(0, 67%, 55%), hsl(0, 67%, 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0, 0%, 14%), hsl(0, 0%, 18%));
+    --gradient-hero: linear-gradient(135deg, hsl(0, 67%, 45%) 0%, hsl(0, 67%, 35%) 100%);
 
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 40px hsl(0 84% 55% / 0.4);
+    --shadow-glow: 0 0 40px hsl(0 67% 55% / 0.4);
 
-    --sidebar-background: 0 0% 10%;
+    --sidebar-background: 0 0% 12%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 84% 55%;
+    --sidebar-primary: 0 67% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 16%;
+    --sidebar-accent: 0 0% 18%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 0 84% 55%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 0 67% 55%;
 
-    --chart-1: 0 84% 55%;
-    --chart-2: 0 70% 65%;
+    --chart-1: 0 67% 55%;
+    --chart-2: 0 67% 65%;
     --chart-3: 0 0% 60%;
-    --chart-4: 0 60% 70%;
+    --chart-4: 0 67% 75%;
     --chart-5: 0 0% 40%;
   }
 }
@@ -134,6 +134,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 

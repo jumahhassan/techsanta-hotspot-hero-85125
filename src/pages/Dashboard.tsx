@@ -17,13 +17,6 @@ import {
 const Dashboard = () => {
   const stats = [
     {
-      title: "Total Users",
-      value: "1,284",
-      icon: Users,
-      trend: "+12% from last month",
-      trendUp: true,
-    },
-    {
       title: "Active Users",
       value: "847",
       icon: Activity,
@@ -31,17 +24,24 @@ const Dashboard = () => {
       trendUp: true,
     },
     {
-      title: "Vouchers Sold",
+      title: "Total Vouchers",
       value: "3,456",
       icon: Ticket,
-      trend: "+18% from last month",
+      trend: "+18% this week",
       trendUp: true,
     },
     {
-      title: "Total Revenue",
-      value: "$45,231",
+      title: "Today's Sales",
+      value: "SSP 12,450",
       icon: TrendingUp,
-      trend: "+23% from last month",
+      trend: "+5% from yesterday",
+      trendUp: true,
+    },
+    {
+      title: "Router Status",
+      value: "Online",
+      icon: Wifi,
+      trend: "99.9% uptime",
       trendUp: true,
     },
   ];
@@ -67,13 +67,15 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="gradient-hero rounded-2xl p-8 text-primary-foreground shadow-glow">
-        <div className="flex items-center gap-3 mb-2">
-          <Wifi className="h-8 w-8" />
-          <h1 className="text-4xl font-bold">Welcome to TechSanta</h1>
+      <div className="gradient-hero rounded-2xl p-8 text-primary-foreground shadow-glow animate-fade-in">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground/20 backdrop-blur">
+            <Wifi className="h-7 w-7" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold">🎅 Welcome to TechSanta Hotspot Manager</h1>
         </div>
-        <p className="text-lg opacity-90">
-          Modern hotspot management system - Monitor your network in real-time
+        <p className="text-base md:text-lg opacity-95 font-medium">
+          Reliable. Community-focused. Tech-savvy network management for South Sudan.
         </p>
       </div>
 

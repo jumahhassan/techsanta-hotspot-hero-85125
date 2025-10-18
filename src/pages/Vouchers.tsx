@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Plus, Download, QrCode, Printer, Filter } from "lucide-react";
+import { Plus, Download, QrCode, Printer, Upload, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -14,6 +15,7 @@ import {
 
 const Vouchers = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const { toast } = useToast();
 
   const vouchers = [
     {
@@ -81,6 +83,20 @@ const Vouchers = () => {
     expired: vouchers.filter((v) => v.status === "expired").length,
   };
 
+  const handlePrintVoucher = (code: string) => {
+    toast({
+      title: "Print Preview Ready",
+      description: `Voucher ${code} is ready to print`,
+    });
+  };
+
+  const handleGenerateQR = (code: string) => {
+    toast({
+      title: "QR Code Generated",
+      description: `QR code for ${code} has been created`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -99,6 +115,30 @@ const Vouchers = () => {
           </Button>
         </div>
       </div>
+
+      {/* Template Selection Card */}
+      <Card className="border-2 border-primary/20 animate-slide-up">
+        <CardHeader>
+          <CardTitle>Voucher Templates</CardTitle>
+          <CardDescription>Choose a template or upload your custom design</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Button variant="outline" className="h-24 flex-col gap-2">
+              <FileText className="h-6 w-6" />
+              <span className="text-sm font-medium">Mikhmon Style</span>
+            </Button>
+            <Button variant="outline" className="h-24 flex-col gap-2">
+              <FileText className="h-6 w-6" />
+              <span className="text-sm font-medium">Minimal Design</span>
+            </Button>
+            <Button variant="outline" className="h-24 flex-col gap-2 border-dashed">
+              <Upload className="h-6 w-6" />
+              <span className="text-sm font-medium">Upload Custom</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -216,10 +256,20 @@ const Vouchers = () => {
                     <TableCell className="text-sm">{voucher.expiresAt}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" title="Generate QR Code">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="Generate QR Code"
+                          onClick={() => handleGenerateQR(voucher.code)}
+                        >
                           <QrCode className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" title="Print Voucher">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="Print Voucher"
+                          onClick={() => handlePrintVoucher(voucher.code)}
+                        >
                           <Printer className="h-4 w-4" />
                         </Button>
                       </div>
