@@ -57,7 +57,7 @@ app.post('/api/router/test', async (req, res) => {
     const conn = await connectToRouter(host, username, password, port);
 
     // Get system identity to verify connection
-    const identity = await conn.menu('/system identity').getAll();
+    const identity = await conn.write('/system/identity/print');
 
     await conn.close();
 
@@ -83,9 +83,9 @@ app.post('/api/router/connect', async (req, res) => {
 
     // Get router information
     const [identity, resource, routerboard] = await Promise.all([
-      conn.menu('/system identity').getAll(),
-      conn.menu('/system resource').getAll(),
-      conn.menu('/system routerboard').getAll().catch(() => [{}]),
+      conn.write('/system/identity/print'),
+      conn.write('/system/resource/print'),
+      conn.write('/system/routerboard/print').catch(() => [{}]),
     ]);
 
     const routerInfo = {
@@ -153,8 +153,8 @@ app.get('/api/router/:id', async (req, res) => {
   try {
     // Get fresh data from router
     const [resource, hotspotActive] = await Promise.all([
-      router.connection.menu('/system resource').getAll(),
-      router.connection.menu('/ip hotspot active').getAll().catch(() => []),
+      router.connection.write('/system/resource/print'),
+      router.connection.write('/ip/hotspot/active/print').catch(() => []),
     ]);
 
     const { password, connection, ...safeRouter } = router;
@@ -220,7 +220,7 @@ app.get('/api/router/:id/hotspot/active', async (req, res) => {
   }
 
   try {
-    const activeUsers = await router.connection.menu('/ip hotspot active').getAll();
+    const activeUsers = await router.connection.write('/ip/hotspot/active/print');
 
     res.json({
       success: true,
@@ -256,7 +256,7 @@ app.get('/api/router/:id/hotspot/users', async (req, res) => {
   }
 
   try {
-    const users = await router.connection.menu('/ip hotspot user').getAll();
+    const users = await router.connection.write('/ip/hotspot/user/print');
 
     res.json({
       success: true,
@@ -301,7 +301,7 @@ app.post('/api/router/:id/hotspot/users', async (req, res) => {
     if (profile) params.profile = profile;
     if (comment) params.comment = comment;
 
-    await router.connection.menu('/ip hotspot user').add(params);
+    await router.connection.write('/ip/hotspot/user/add', params);
 
     res.json({
       success: true,
@@ -328,7 +328,7 @@ app.delete('/api/router/:id/hotspot/users/:userId', async (req, res) => {
   }
 
   try {
-    await router.connection.menu('/ip hotspot user').remove(userId);
+    await router.connection.write('/ip/hotspot/user/remove', { '.id': userId });
 
     res.json({
       success: true,
@@ -355,7 +355,7 @@ app.post('/api/router/:id/hotspot/active/:userId/disconnect', async (req, res) =
   }
 
   try {
-    await router.connection.menu('/ip hotspot active').remove(userId);
+    await router.connection.write('/ip/hotspot/active/remove', { '.id': userId });
 
     res.json({
       success: true,
@@ -382,7 +382,7 @@ app.get('/api/router/:id/hotspot/profiles', async (req, res) => {
   }
 
   try {
-    const profiles = await router.connection.menu('/ip hotspot user profile').getAll();
+    const profiles = await router.connection.write('/ip/hotspot/user/profile/print');
 
     res.json({
       success: true,
