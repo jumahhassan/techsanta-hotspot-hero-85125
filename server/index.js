@@ -57,14 +57,14 @@ app.post('/api/router/test', async (req, res) => {
     const conn = await connectToRouter(host, username, password, port);
 
     // Get system identity to verify connection
-    const identity = await conn.write('/system/identity/print');
+    const identity = await conn.menu('/system identity').getOnly();
 
     await conn.close();
 
     res.json({
       success: true,
       message: 'Connection successful',
-      identity: identity[0]?.name || 'Unknown',
+      identity: identity?.name || 'Unknown',
     });
   } catch (error) {
     res.status(400).json({
@@ -83,25 +83,25 @@ app.post('/api/router/connect', async (req, res) => {
 
     // Get router information
     const [identity, resource, routerboard] = await Promise.all([
-      conn.write('/system/identity/print'),
-      conn.write('/system/resource/print'),
-      conn.write('/system/routerboard/print').catch(() => [{}]),
+      conn.menu('/system identity').getOnly(),
+      conn.menu('/system resource').getOnly(),
+      conn.menu('/system routerboard').getOnly().catch(() => ({})),
     ]);
 
     const routerInfo = {
       id: id || `router_${Date.now()}`,
-      name: name || identity[0]?.name || 'Unknown Router',
+      name: name || identity?.name || 'Unknown Router',
       host,
       username,
       password,
       port: port || 8728,
-      identity: identity[0]?.name || 'Unknown',
-      uptime: resource[0]?.uptime || 'Unknown',
-      version: resource[0]?.version || 'Unknown',
-      model: routerboard[0]?.model || 'Unknown',
-      cpuLoad: parseInt(resource[0]?.['cpu-load']) || 0,
-      freeMemory: parseInt(resource[0]?.['free-memory']) || 0,
-      totalMemory: parseInt(resource[0]?.['total-memory']) || 0,
+      identity: identity?.name || 'Unknown',
+      uptime: resource?.uptime || 'Unknown',
+      version: resource?.version || 'Unknown',
+      model: routerboard?.model || 'Unknown',
+      cpuLoad: parseInt(resource?.['cpu-load']) || 0,
+      freeMemory: parseInt(resource?.['free-memory']) || 0,
+      totalMemory: parseInt(resource?.['total-memory']) || 0,
       connectedAt: new Date().toISOString(),
     };
 
@@ -153,8 +153,8 @@ app.get('/api/router/:id', async (req, res) => {
   try {
     // Get fresh data from router
     const [resource, hotspotActive] = await Promise.all([
-      router.connection.write('/system/resource/print'),
-      router.connection.write('/ip/hotspot/active/print').catch(() => []),
+      router.connection.menu('/system resource').getOnly(),
+      router.connection.menu('/ip hotspot active').get().catch(() => []),
     ]);
 
     const { password, connection, ...safeRouter } = router;
@@ -163,10 +163,10 @@ app.get('/api/router/:id', async (req, res) => {
       success: true,
       router: {
         ...safeRouter,
-        cpuLoad: parseInt(resource[0]?.['cpu-load']) || 0,
-        freeMemory: parseInt(resource[0]?.['free-memory']) || 0,
-        totalMemory: parseInt(resource[0]?.['total-memory']) || 0,
-        uptime: resource[0]?.uptime || 'Unknown',
+        cpuLoad: parseInt(resource?.['cpu-load']) || 0,
+        freeMemory: parseInt(resource?.['free-memory']) || 0,
+        totalMemory: parseInt(resource?.['total-memory']) || 0,
+        uptime: resource?.uptime || 'Unknown',
         activeUsers: hotspotActive.length,
       },
     });
@@ -220,7 +220,7 @@ app.get('/api/router/:id/hotspot/active', async (req, res) => {
   }
 
   try {
-    const activeUsers = await router.connection.write('/ip/hotspot/active/print');
+    const activeUsers = await router.connection.menu('/ip hotspot active').get();
 
     res.json({
       success: true,
@@ -256,7 +256,7 @@ app.get('/api/router/:id/hotspot/users', async (req, res) => {
   }
 
   try {
-    const users = await router.connection.write('/ip/hotspot/user/print');
+    const users = await router.connection.menu('/ip hotspot user').get();
 
     res.json({
       success: true,
@@ -301,7 +301,7 @@ app.post('/api/router/:id/hotspot/users', async (req, res) => {
     if (profile) params.profile = profile;
     if (comment) params.comment = comment;
 
-    await router.connection.write('/ip/hotspot/user/add', params);
+    await router.connection.menu('/ip hotspot user').add(params);
 
     res.json({
       success: true,
@@ -328,7 +328,7 @@ app.delete('/api/router/:id/hotspot/users/:userId', async (req, res) => {
   }
 
   try {
-    await router.connection.write('/ip/hotspot/user/remove', { '.id': userId });
+    await router.connection.menu('/ip hotspot user').remove(userId);
 
     res.json({
       success: true,
@@ -355,7 +355,7 @@ app.post('/api/router/:id/hotspot/active/:userId/disconnect', async (req, res) =
   }
 
   try {
-    await router.connection.write('/ip/hotspot/active/remove', { '.id': userId });
+    await router.connection.menu('/ip hotspot active').remove(userId);
 
     res.json({
       success: true,
@@ -382,7 +382,7 @@ app.get('/api/router/:id/hotspot/profiles', async (req, res) => {
   }
 
   try {
-    const profiles = await router.connection.write('/ip/hotspot/user/profile/print');
+    const profiles = await router.connection.menu('/ip hotspot user profile').get();
 
     res.json({
       success: true,
