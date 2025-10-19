@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, RefreshCw, Wifi, Server } from "lucide-react";
+import { BackendStatus } from "@/components/BackendStatus";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -156,6 +157,9 @@ const Routers = () => {
 
   return (
     <div className="space-y-6">
+      {/* Backend Status */}
+      <BackendStatus />
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="border-l-4 border-red-500 pl-4">

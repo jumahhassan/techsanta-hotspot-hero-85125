@@ -1,5 +1,6 @@
 // API client for router operations
-const API_BASE_URL = 'http://localhost:3001/api';
+// Use environment variable or default to localhost
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export interface Router {
   id: string;
