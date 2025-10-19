@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm install concurrently)",
+      "Bash(npm install)",
+      "Bash(npm view node-routeros versions --json)",
+      "Bash(npm view routeros-client versions --json)",
+      "Bash(node index.js)",
+      "Bash(curl http://localhost:3001/api/health)",
+      "Bash(npm run build)",
+      "Bash(git add .)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Plus, Download, QrCode, Printer, Upload, FileText } from "lucide-react";
+import { Plus, Download, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,62 +10,56 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const Vouchers = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const { toast } = useToast();
 
   const vouchers = [
     {
       id: 1,
       code: "TECH-5H-001",
       plan: "5 Hours",
-      price: "$5.00",
+      price: "SSP 5.00",
       status: "active",
       createdAt: "2024-01-15",
       expiresAt: "2024-02-15",
-      used: false,
     },
     {
       id: 2,
       code: "TECH-1D-002",
       plan: "1 Day",
-      price: "$10.00",
+      price: "SSP 10.00",
       status: "used",
       createdAt: "2024-01-14",
       expiresAt: "2024-02-14",
-      used: true,
-      usedAt: "2024-01-20",
     },
     {
       id: 3,
       code: "TECH-1W-003",
       plan: "1 Week",
-      price: "$25.00",
+      price: "SSP 25.00",
       status: "active",
       createdAt: "2024-01-13",
       expiresAt: "2024-02-13",
-      used: false,
     },
     {
       id: 4,
       code: "TECH-1M-004",
       plan: "1 Month",
-      price: "$50.00",
+      price: "SSP 50.00",
       status: "expired",
       createdAt: "2023-12-01",
       expiresAt: "2024-01-01",
-      used: false,
     },
     {
       id: 5,
       code: "TECH-5H-005",
       plan: "5 Hours",
-      price: "$5.00",
+      price: "SSP 5.00",
       status: "active",
       createdAt: "2024-01-16",
       expiresAt: "2024-02-16",
-      used: false,
     },
   ];
 
@@ -83,108 +75,88 @@ const Vouchers = () => {
     expired: vouchers.filter((v) => v.status === "expired").length,
   };
 
-  const handlePrintVoucher = (code: string) => {
-    toast({
-      title: "Print Preview Ready",
-      description: `Voucher ${code} is ready to print`,
-    });
-  };
-
-  const handleGenerateQR = (code: string) => {
-    toast({
-      title: "QR Code Generated",
-      description: `QR code for ${code} has been created`,
-    });
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="border-l-4 border-red-500 pl-4">
           <h1 className="text-3xl font-bold">Voucher Management</h1>
-          <p className="text-muted-foreground">Generate and manage hotspot vouchers</p>
+          <p className="text-muted-foreground">Generate and manage vouchers</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" className="border-red-200 hover:bg-red-50">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button className="gradient-primary shadow-glow">
+          <Button className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg">
             <Plus className="mr-2 h-4 w-4" />
-            Generate Vouchers
+            Generate
           </Button>
         </div>
       </div>
 
-      {/* Template Selection Card */}
-      <Card className="border-2 border-primary/20 animate-slide-up">
-        <CardHeader>
-          <CardTitle>Voucher Templates</CardTitle>
-          <CardDescription>Choose a template or upload your custom design</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Button variant="outline" className="h-24 flex-col gap-2">
-              <FileText className="h-6 w-6" />
-              <span className="text-sm font-medium">Mikhmon Style</span>
-            </Button>
-            <Button variant="outline" className="h-24 flex-col gap-2">
-              <FileText className="h-6 w-6" />
-              <span className="text-sm font-medium">Minimal Design</span>
-            </Button>
-            <Button variant="outline" className="h-24 flex-col gap-2 border-dashed">
-              <Upload className="h-6 w-6" />
-              <span className="text-sm font-medium">Upload Custom</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">Total Vouchers</p>
-              <p className="text-3xl font-bold">{stats.total}</p>
-            </div>
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <div className="h-1.5 bg-gradient-to-r from-slate-500 to-slate-600" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Vouchers
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">Active</p>
-              <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-            </div>
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <div className="h-1.5 bg-gradient-to-r from-green-500 to-emerald-500" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Active
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">Used</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.used}</p>
-            </div>
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <div className="h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Used
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{stats.used}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium text-muted-foreground">Expired</p>
-              <p className="text-3xl font-bold text-red-600">{stats.expired}</p>
-            </div>
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <div className="h-1.5 bg-gradient-to-r from-red-500 to-orange-500" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Expired
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{stats.expired}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <CardTitle>All Vouchers</CardTitle>
+      {/* Vouchers Table */}
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Ticket className="h-5 w-5 text-red-500" />
+              <CardTitle>All Vouchers</CardTitle>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant={filterStatus === "all" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterStatus("all")}
+                className={filterStatus === "all" ? "bg-gradient-to-r from-red-500 to-orange-500" : ""}
               >
                 All
               </Button>
@@ -192,6 +164,7 @@ const Vouchers = () => {
                 variant={filterStatus === "active" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterStatus("active")}
+                className={filterStatus === "active" ? "bg-green-600" : ""}
               >
                 Active
               </Button>
@@ -199,6 +172,7 @@ const Vouchers = () => {
                 variant={filterStatus === "used" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterStatus("used")}
+                className={filterStatus === "used" ? "bg-blue-600" : ""}
               >
                 Used
               </Button>
@@ -206,79 +180,52 @@ const Vouchers = () => {
                 variant={filterStatus === "expired" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterStatus("expired")}
+                className={filterStatus === "expired" ? "bg-red-600" : ""}
               >
                 Expired
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Voucher Code</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+        <CardContent className="pt-6">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Voucher Code</TableHead>
+                <TableHead>Plan</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Expires</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredVouchers.map((voucher) => (
+                <TableRow key={voucher.id}>
+                  <TableCell className="font-mono font-medium">
+                    {voucher.code}
+                  </TableCell>
+                  <TableCell>{voucher.plan}</TableCell>
+                  <TableCell className="font-semibold">{voucher.price}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        voucher.status === "active"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : voucher.status === "used"
+                          ? "bg-blue-500 hover:bg-blue-600"
+                          : "bg-red-500 hover:bg-red-600"
+                      }
+                    >
+                      {voucher.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{voucher.createdAt}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{voucher.expiresAt}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredVouchers.map((voucher) => (
-                  <TableRow key={voucher.id}>
-                    <TableCell className="font-mono font-medium">
-                      {voucher.code}
-                    </TableCell>
-                    <TableCell>{voucher.plan}</TableCell>
-                    <TableCell className="font-semibold">{voucher.price}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          voucher.status === "active"
-                            ? "default"
-                            : voucher.status === "used"
-                            ? "secondary"
-                            : "destructive"
-                        }
-                        className={
-                          voucher.status === "active"
-                            ? "bg-green-500/10 text-green-700 hover:bg-green-500/20"
-                            : ""
-                        }
-                      >
-                        {voucher.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">{voucher.createdAt}</TableCell>
-                    <TableCell className="text-sm">{voucher.expiresAt}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          title="Generate QR Code"
-                          onClick={() => handleGenerateQR(voucher.code)}
-                        >
-                          <QrCode className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          title="Print Voucher"
-                          onClick={() => handlePrintVoucher(voucher.code)}
-                        >
-                          <Printer className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Dashboard from "./pages/Dashboard";
+import Routers from "./pages/Routers";
 import Users from "./pages/Users";
 import Vouchers from "./pages/Vouchers";
 import Settings from "./pages/Settings";
@@ -24,6 +25,7 @@ const App = () => (
           <main className="container mx-auto px-4 py-8 flex-1">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/routers" element={<Routers />} />
               <Route path="/users" element={<Users />} />
               <Route path="/vouchers" element={<Vouchers />} />
               <Route path="/settings" element={<Settings />} />

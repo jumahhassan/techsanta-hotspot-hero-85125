@@ -10,6 +10,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: "/", label: "Dashboard" },
+    { path: "/routers", label: "Routers" },
     { path: "/users", label: "Users" },
     { path: "/vouchers", label: "Vouchers" },
     { path: "/settings", label: "Settings" },
