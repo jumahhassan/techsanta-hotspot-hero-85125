@@ -21,11 +21,29 @@ async function connectToRouter(host, username, password, port = 8728) {
     timeout: 10,
   });
 
+  // Add error handler to prevent crashes
+  client.on('error', (err) => {
+    console.error('RouterOS Client Error:', err.message);
+  });
+
   try {
     await client.connect();
     return client;
   } catch (error) {
-    throw new Error(`Failed to connect to router: ${error.message}`);
+    // Provide more helpful error messages
+    let errorMessage = 'Failed to connect to router';
+
+    if (error.errno === 'SOCKTMOUT' || error.message.includes('Timed out')) {
+      errorMessage = 'Connection timeout. Check if router IP is correct and API is enabled on port ' + port;
+    } else if (error.message.includes('ECONNREFUSED')) {
+      errorMessage = 'Connection refused. Make sure API service is running on the router';
+    } else if (error.message.includes('authentication')) {
+      errorMessage = 'Authentication failed. Check username and password';
+    } else {
+      errorMessage = error.message;
+    }
+
+    throw new Error(errorMessage);
   }
 }
 
@@ -393,6 +411,25 @@ app.get('/api/health', (req, res) => {
     message: 'Server is running',
     connectedRouters: connectedRouters.size,
   });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Process error handlers to prevent crashes
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 app.listen(PORT, () => {
