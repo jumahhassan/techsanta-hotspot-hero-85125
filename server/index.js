@@ -1,14 +1,29 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { RouterOSClient } from 'routeros-client';
+import connectDB from './config/database.js';
+import Router from './models/Router.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// Connect to MongoDB
+connectDB();
+
+// CORS configuration - allow frontend to connect
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.FRONTEND_URL || true
+    : ['http://localhost:8080', 'http://localhost:5173'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Store active router connections (in-memory, no database)
+// Store active router connections (in-memory for real-time connections)
+// Database stores router configurations for persistence
 const connectedRouters = new Map();
 
 // Helper function to connect to a MikroTik router
@@ -88,23 +103,45 @@ app.post('/api/router/connect', async (req, res) => {
       conn.menu('/system routerboard').getOnly().catch(() => ({})),
     ]);
 
-    const routerInfo = {
-      id: id || `router_${Date.now()}`,
+    const routerData = {
       name: name || identity?.name || 'Unknown Router',
       host,
       username,
       password,
       port: port || 8728,
       identity: identity?.name || 'Unknown',
-      uptime: resource?.uptime || 'Unknown',
       version: resource?.version || 'Unknown',
       model: routerboard?.model || 'Unknown',
+      lastConnected: new Date(),
+      isActive: true,
+    };
+
+    // Save or update router in database
+    let savedRouter;
+    if (id) {
+      savedRouter = await Router.findByIdAndUpdate(id, routerData, { new: true, upsert: true });
+    } else {
+      savedRouter = await Router.create(routerData);
+    }
+
+    const routerInfo = {
+      id: savedRouter._id.toString(),
+      name: savedRouter.name,
+      host: savedRouter.host,
+      username: savedRouter.username,
+      password: savedRouter.password,
+      port: savedRouter.port,
+      identity: savedRouter.identity,
+      uptime: resource?.uptime || 'Unknown',
+      version: savedRouter.version,
+      model: savedRouter.model,
       cpuLoad: parseInt(resource?.['cpu-load']) || 0,
       freeMemory: parseInt(resource?.['free-memory']) || 0,
       totalMemory: parseInt(resource?.['total-memory']) || 0,
-      connectedAt: new Date().toISOString(),
+      connectedAt: savedRouter.lastConnected.toISOString(),
     };
 
+    // Store connection in memory
     connectedRouters.set(routerInfo.id, {
       ...routerInfo,
       connection: conn,
@@ -125,17 +162,45 @@ app.post('/api/router/connect', async (req, res) => {
   }
 });
 
-// Get all connected routers
-app.get('/api/routers', (req, res) => {
-  const routers = Array.from(connectedRouters.values()).map(router => {
-    const { password, connection, ...safeRouter } = router;
-    return safeRouter;
-  });
+// Get all saved routers (from database)
+app.get('/api/routers', async (req, res) => {
+  try {
+    // Get routers from database
+    const savedRouters = await Router.find().select('-password').lean();
 
-  res.json({
-    success: true,
-    routers,
-  });
+    // Combine with active connections
+    const routers = savedRouters.map(router => {
+      const activeConnection = connectedRouters.get(router._id.toString());
+      return {
+        id: router._id.toString(),
+        name: router.name,
+        host: router.host,
+        username: router.username,
+        port: router.port,
+        identity: router.identity,
+        version: router.version,
+        model: router.model,
+        lastConnected: router.lastConnected,
+        isActive: activeConnection ? true : false,
+        ...(activeConnection ? {
+          cpuLoad: activeConnection.cpuLoad,
+          freeMemory: activeConnection.freeMemory,
+          totalMemory: activeConnection.totalMemory,
+          uptime: activeConnection.uptime,
+        } : {}),
+      };
+    });
+
+    res.json({
+      success: true,
+      routers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 });
 
 // Get single router info
@@ -191,8 +256,12 @@ app.delete('/api/router/:id', async (req, res) => {
   }
 
   try {
+    // Close connection
     await router.connection.close();
     connectedRouters.delete(id);
+
+    // Update database - mark as inactive
+    await Router.findByIdAndUpdate(id, { isActive: false });
 
     res.json({
       success: true,
@@ -200,6 +269,9 @@ app.delete('/api/router/:id', async (req, res) => {
     });
   } catch (error) {
     connectedRouters.delete(id);
+    // Update database anyway
+    await Router.findByIdAndUpdate(id, { isActive: false }).catch(() => {});
+
     res.json({
       success: true,
       message: 'Router disconnected',
@@ -412,6 +484,17 @@ app.get('/api/health', (req, res) => {
     connectedRouters: connectedRouters.size,
   });
 });
+
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+
+  // All non-API routes should serve the React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {

@@ -1,10 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:www.npmjs.com)",
-      "Bash(npm view routeros-client@1.1.2 repository.url)",
-      "WebFetch(domain:github.com)",
-      "Bash(git commit -m \"Fix RouterOS API to use correct routeros-client syntax\n\n- Changed to use .menu().get() and .menu().getOnly()\n- Fixed all endpoints to match library documentation\n- Updated data handling to work with single objects instead of arrays\")"
+      "Bash(git push)",
+      "Bash(npm install mongoose)",
+      "Bash(git add .)"
     ],
     "deny": [],
     "ask": []

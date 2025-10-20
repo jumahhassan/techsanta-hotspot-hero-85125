@@ -1,73 +1,141 @@
-# Welcome to your Lovable project
+# TechSanta Hotspot Hero
 
-## Project info
+A full-stack MikroTik hotspot management application with separate frontend and backend services.
 
-**URL**: https://lovable.dev/projects/9a80ec79-7606-44c8-b338-cb8311fea9f7
+## Project Structure
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9a80ec79-7606-44c8-b338-cb8311fea9f7) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+techsanta-hotspot-hero/
+├── frontend/          # React + Vite frontend application
+│   ├── src/          # Source code
+│   ├── public/       # Static assets
+│   └── package.json  # Frontend dependencies
+├── server/           # Express.js backend API
+│   ├── index.js      # Main server file
+│   └── package.json  # Backend dependencies
+├── render.yaml       # Render deployment configuration
+└── package.json      # Root package.json for development scripts
 ```
 
-**Edit a file directly in GitHub**
+## Technologies Used
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
+**Frontend:**
+- React + TypeScript
 - Vite
-- TypeScript
-- React
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+**Backend:**
+- Node.js + Express
+- routeros-client (MikroTik RouterOS API)
 
-Simply open [Lovable](https://lovable.dev/projects/9a80ec79-7606-44c8-b338-cb8311fea9f7) and click on Share -> Publish.
+## Local Development
 
-## Can I connect a custom domain to my Lovable project?
+### Prerequisites
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Yes, you can!
+### Setup
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```sh
+# Clone the repository
+git clone <YOUR_GIT_URL>
+cd techsanta-hotspot-hero
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Install root dependencies (for concurrently)
+npm install
+
+# Install both frontend and backend dependencies
+npm run install:all
+```
+
+### Running in Development Mode
+
+```sh
+# Run both frontend and backend concurrently
+npm run dev
+```
+
+This will start:
+- Frontend at `http://localhost:8080`
+- Backend API at `http://localhost:3001`
+
+### Running Services Separately
+
+```sh
+# Run only frontend
+npm run dev:frontend
+
+# Run only server (backend)
+npm run dev:server
+```
+
+## Deployment to Render
+
+This project is configured for easy deployment to Render with separate frontend and backend services.
+
+### Automatic Deployment (Recommended)
+
+1. **Push your code to GitHub**
+
+2. **Connect to Render**:
+   - Go to [Render Dashboard](https://dashboard.render.com/)
+   - Click "New +" and select "Blueprint"
+   - Connect your GitHub repository
+   - Render will automatically detect `render.yaml` and create two services:
+     - `techsanta-backend` (API service)
+     - `techsanta-frontend` (Static site)
+
+3. **Configure Environment Variables**:
+
+   **Backend Service (`techsanta-backend`):**
+   - `NODE_ENV`: `production` (auto-set)
+   - `PORT`: `10000` (auto-set)
+   - `FRONTEND_URL`: Set to your frontend URL (e.g., `https://techsanta-frontend.onrender.com`)
+
+   **Frontend Service (`techsanta-frontend`):**
+   - `VITE_API_URL`: Set to your backend URL + `/api` (e.g., `https://techsanta-backend.onrender.com/api`)
+
+4. **Deploy**: Render will automatically build and deploy both services
+
+### Manual Deployment
+
+If you prefer to deploy services separately:
+
+**Backend:**
+- Service Type: Web Service
+- Root Directory: `server`
+- Build Command: `npm install`
+- Start Command: `npm start`
+
+**Frontend:**
+- Service Type: Static Site
+- Root Directory: `frontend`
+- Build Command: `npm install && npm run build`
+- Publish Directory: `dist`
+
+### Environment Variables
+
+Check `.env.example` files in both directories for required environment variables:
+- `frontend/.env.example` - Frontend configuration
+- `server/.env.example` - Backend/Server configuration
+
+## Production Build Locally
+
+To test the production build locally:
+
+```sh
+# Build both services
+npm run build
+
+# Start both services
+npm start
+```
+
+## Application Features
+
+- Connect to MikroTik routers via RouterOS API
+- View active hotspot users
+- Manage hotspot users (create, delete)
+- Monitor router statistics (CPU, memory, uptime)
+- Disconnect active users
+- View hotspot profiles
