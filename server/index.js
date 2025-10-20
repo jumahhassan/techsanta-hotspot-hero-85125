@@ -485,17 +485,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve static files from the React app in production
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '..', 'dist');
-  app.use(express.static(distPath));
-
-  // All non-API routes should serve the React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-}
-
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
