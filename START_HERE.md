@@ -2,7 +2,7 @@
 
 ## Your Router Details
 - **Name**: SoukJunub
-- **IP**: 192.168.1.171
+- **IP**: 192.168.4.1
 - **Username**: admin
 - **Password**: teledata1
 - **Port**: 8728
@@ -53,7 +53,7 @@ The frontend will start on `http://localhost:5173`
 3. Click **"Add Router"** button
 4. Fill in the form:
    - Router Name: **SoukJunub**
-   - IP Address: **192.168.1.171**
+   - IP Address: **192.168.4.1**
    - Username: **admin**
    - Password: **teledata1**
    - API Port: **8728**
@@ -85,8 +85,8 @@ PORT=3002 node index.js
    - Make sure "api" is enabled on port 8728
 
 2. **Check firewall:**
-   - Make sure your computer can reach 192.168.1.171
-   - Try: `ping 192.168.1.171`
+   - Make sure your computer can reach 192.168.4.1
+   - Try: `ping 192.168.4.1`
 
 3. **Test manually:**
    - Use MikroTik's Winbox to verify credentials work
