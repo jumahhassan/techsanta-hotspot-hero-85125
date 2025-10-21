@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Download, Ticket } from "lucide-react";
+import { Plus, Download, Ticket, FileText } from "lucide-react";
+import VoucherGenerator from "@/components/voucher/VoucherGenerator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 
 const Vouchers = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [showGenerator, setShowGenerator] = useState(false);
 
   const vouchers = [
     {
@@ -84,6 +86,14 @@ const Vouchers = () => {
           <p className="text-muted-foreground">Generate and manage vouchers</p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            className="border-blue-200 hover:bg-blue-50"
+            onClick={() => setShowGenerator(!showGenerator)}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            {showGenerator ? "View List" : "Template Generator"}
+          </Button>
           <Button variant="outline" className="border-red-200 hover:bg-red-50">
             <Download className="mr-2 h-4 w-4" />
             Export
@@ -94,6 +104,9 @@ const Vouchers = () => {
           </Button>
         </div>
       </div>
+
+      {/* Template Generator */}
+      {showGenerator && <VoucherGenerator />}
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -144,6 +157,7 @@ const Vouchers = () => {
       </div>
 
       {/* Vouchers Table */}
+      {!showGenerator && (
       <Card className="border-0 shadow-lg">
         <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
           <div className="flex items-center justify-between">
@@ -228,6 +242,7 @@ const Vouchers = () => {
           </Table>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };

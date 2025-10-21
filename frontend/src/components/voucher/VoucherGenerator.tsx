@@ -2,13 +2,7 @@ import { useState } from "react";
 import { Download, Eye, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VoucherTemplate, VoucherData } from "./VoucherTemplate";
@@ -23,7 +17,6 @@ const VoucherGenerator = () => {
   const [showBranding, setShowBranding] = useState(true);
   const [customWatermark, setCustomWatermark] = useState("Valid at TechSanta Hotspot – Terekeka");
 
-  // Sample voucher data - in production this would come from backend
   const sampleVouchers: VoucherData[] = [
     {
       id: "TS-001",
@@ -93,7 +86,7 @@ const VoucherGenerator = () => {
         format: "a4",
       });
 
-      const imgWidth = 210; // A4 width in mm
+      const imgWidth = 210;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
@@ -152,14 +145,12 @@ const VoucherGenerator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Configuration Card */}
       <Card className="border-0 shadow-lg">
         <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
           <CardTitle>Voucher Template Settings</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Template Selection */}
             <div className="space-y-2">
               <Label htmlFor="template">Template Style</Label>
               <Select value={template} onValueChange={(value: any) => setTemplate(value)}>
@@ -175,7 +166,6 @@ const VoucherGenerator = () => {
               </Select>
             </div>
 
-            {/* Vouchers per page */}
             <div className="space-y-2">
               <Label htmlFor="perPage">Vouchers Per Page</Label>
               <Select
@@ -193,7 +183,6 @@ const VoucherGenerator = () => {
               </Select>
             </div>
 
-            {/* Custom Watermark */}
             <div className="space-y-2">
               <Label htmlFor="watermark">Custom Text</Label>
               <Input
@@ -205,7 +194,6 @@ const VoucherGenerator = () => {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-2 mt-6">
             <Button
               variant="outline"
@@ -242,7 +230,6 @@ const VoucherGenerator = () => {
         </CardContent>
       </Card>
 
-      {/* Preview Card */}
       <Card className="border-0 shadow-lg">
         <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
           <div className="flex items-center justify-between">
@@ -269,7 +256,6 @@ const VoucherGenerator = () => {
         </CardContent>
       </Card>
 
-      {/* Print Styles */}
       <style>{`
         @media print {
           body * {

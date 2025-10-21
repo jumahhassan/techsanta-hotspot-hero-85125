@@ -23,13 +23,11 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
   const templates = {
     classic: (
       <div className="w-[350px] h-[200px] bg-white border-2 border-red-500 rounded-lg p-4 print:break-inside-avoid relative overflow-hidden">
-        {/* Watermark */}
         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
           <Wifi className="w-32 h-32 text-red-500" />
         </div>
         
         <div className="relative z-10 h-full flex flex-col">
-          {/* Header */}
           <div className="flex items-center justify-between mb-3 border-b-2 border-red-200 pb-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
@@ -45,7 +43,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
             </div>
           </div>
 
-          {/* Content */}
           <div className="flex-1 flex gap-3">
             <div className="flex-1 space-y-2">
               <div>
@@ -72,14 +69,12 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
               </div>
             </div>
             
-            {/* QR Code */}
             <div className="flex flex-col items-center justify-center">
               <QRCodeSVG value={loginUrl} size={70} level="M" />
               <p className="text-[8px] text-gray-600 mt-1">Scan to login</p>
             </div>
           </div>
 
-          {/* Footer */}
           {showBranding && (
             <div className="mt-2 pt-2 border-t border-red-200">
               <div className="flex items-center justify-between text-[9px] text-gray-600">
@@ -98,7 +93,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
     minimal: (
       <div className="w-[350px] h-[200px] bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-4 print:break-inside-avoid">
         <div className="h-full flex flex-col justify-between">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 border-2 border-red-500 rounded flex items-center justify-center">
@@ -109,7 +103,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
             <span className="text-[10px] text-gray-500">#{data.id}</span>
           </div>
 
-          {/* Main Content */}
           <div className="flex gap-4 items-center">
             <QRCodeSVG value={loginUrl} size={80} level="M" />
             
@@ -125,7 +118,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-between text-[10px] text-gray-600">
             <span>{data.profile}</span>
             <span>{data.dataLimit}</span>
@@ -139,7 +131,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
       <div className="w-[350px] h-[200px] bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-[2px] print:break-inside-avoid">
         <div className="bg-white rounded-xl h-full p-4">
           <div className="h-full flex flex-col">
-            {/* Header with gradient */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
@@ -158,7 +149,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
               </div>
             </div>
 
-            {/* Credentials */}
             <div className="flex gap-3 mb-3">
               <div className="flex-1">
                 <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-2 mb-2">
@@ -178,7 +168,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
               </div>
             </div>
 
-            {/* Footer info */}
             {showBranding && (
               <div className="mt-auto pt-2 border-t border-gray-200">
                 <div className="flex items-center justify-between text-[9px] text-gray-600">
@@ -194,12 +183,10 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
 
     festive: (
       <div className="w-[350px] h-[200px] bg-gradient-to-br from-red-600 via-red-500 to-orange-500 rounded-2xl p-4 print:break-inside-avoid relative overflow-hidden">
-        {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full -ml-8 -mb-8" />
         
         <div className="relative z-10 h-full flex flex-col text-white">
-          {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
@@ -207,7 +194,7 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
               </div>
               <div>
                 <h3 className="font-bold text-base">🎅 TechSanta</h3>
-                <p className="text-[10px] text-white/80">Season's Greetings!</p>
+                <p className="text-[10px] text-white/80">Season&apos;s Greetings!</p>
               </div>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-2 py-1">
@@ -215,7 +202,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
             </div>
           </div>
 
-          {/* Content */}
           <div className="flex gap-3 flex-1">
             <div className="flex-1 space-y-2">
               <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
@@ -238,7 +224,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
               </div>
             </div>
             
-            {/* QR Code */}
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white p-2 rounded-lg">
                 <QRCodeSVG value={loginUrl} size={65} level="M" />
@@ -247,7 +232,6 @@ export const VoucherTemplate = ({ data, template, showBranding = true }: Voucher
             </div>
           </div>
 
-          {/* Footer */}
           {showBranding && (
             <div className="mt-2 pt-2 border-t border-white/20">
               <p className="text-center text-[9px] text-white/80">
