@@ -4,6 +4,7 @@ import cors from 'cors';
 import { RouterOSClient } from 'routeros-client';
 import connectDB from './config/database.js';
 import Router from './models/Router.js';
+import { discoverRouters } from './services/mndpDiscovery.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -63,6 +64,29 @@ async function connectToRouter(host, username, password, port = 8728) {
 }
 
 // API Routes
+
+// Discover MikroTik routers on the network using MNDP
+app.get('/api/router/discover', async (req, res) => {
+  try {
+    console.log('Starting MNDP router discovery...');
+    const routers = await discoverRouters();
+
+    res.json({
+      success: true,
+      message: `Found ${routers.length} MikroTik router(s)`,
+      routers: routers,
+      count: routers.length,
+    });
+  } catch (error) {
+    console.error('Discovery error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to discover routers: ' + error.message,
+      routers: [],
+      count: 0,
+    });
+  }
+});
 
 // Test router connection
 app.post('/api/router/test', async (req, res) => {

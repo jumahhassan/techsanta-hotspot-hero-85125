@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, RefreshCw, Wifi, Server } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Wifi, Server, Radar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,11 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { routerAPI, Router } from "@/lib/api/router";
+import { routerAPI, Router, DiscoveredRouter } from "@/lib/api/router";
 import {
   Table,
   TableBody,
@@ -32,7 +33,10 @@ import { Badge } from "@/components/ui/badge";
 
 const Routers = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [discoveredRouters, setDiscoveredRouters] = useState<DiscoveredRouter[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -146,6 +150,49 @@ const Routers = () => {
     });
   };
 
+  const handleDiscover = async () => {
+    setIsDiscovering(true);
+    setDiscoveredRouters([]);
+
+    try {
+      const result = await routerAPI.discover();
+
+      if (result.success) {
+        setDiscoveredRouters(result.routers);
+        toast({
+          title: "Discovery Complete",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Discovery Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to discover routers on the network",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDiscovering(false);
+    }
+  };
+
+  const handleSelectDiscoveredRouter = (router: DiscoveredRouter) => {
+    setFormData({
+      name: router.identity || "Discovered Router",
+      host: router.host || router.ipAddress,
+      username: "admin",
+      password: "",
+      port: "8728",
+    });
+    setIsDiscoveryOpen(false);
+    setIsDialogOpen(true);
+  };
+
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
@@ -172,6 +219,95 @@ const Routers = () => {
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
+          <Dialog open={isDiscoveryOpen} onOpenChange={setIsDiscoveryOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="border-orange-200 hover:bg-orange-50"
+              >
+                <Radar className="mr-2 h-4 w-4" />
+                Discover Routers
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Radar className="h-5 w-5 text-orange-500" />
+                  Auto-Discover MikroTik Routers
+                </DialogTitle>
+                <DialogDescription>
+                  Scan your local network for MikroTik routers using MNDP protocol
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Button
+                  onClick={handleDiscover}
+                  disabled={isDiscovering}
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                >
+                  {isDiscovering ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Scanning Network...
+                    </>
+                  ) : (
+                    <>
+                      <Radar className="mr-2 h-4 w-4" />
+                      Start Discovery
+                    </>
+                  )}
+                </Button>
+
+                {discoveredRouters.length > 0 && (
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Router Name</TableHead>
+                          <TableHead>IP Address</TableHead>
+                          <TableHead>Version</TableHead>
+                          <TableHead>Platform</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {discoveredRouters.map((router, index) => (
+                          <TableRow key={router.macAddress || index}>
+                            <TableCell className="font-medium">
+                              {router.identity || "Unknown"}
+                            </TableCell>
+                            <TableCell>{router.host || router.ipAddress}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{router.version || "N/A"}</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {router.platform || router.board || "N/A"}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                onClick={() => handleSelectDiscoveredRouter(router)}
+                                className="bg-green-500 hover:bg-green-600"
+                              >
+                                Connect
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {!isDiscovering && discoveredRouters.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Wifi className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No routers discovered yet. Click "Start Discovery" to scan.</p>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg">

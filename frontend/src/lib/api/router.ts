@@ -50,7 +50,29 @@ export interface HotspotProfile {
   keepaliveTimeout: string;
 }
 
+export interface DiscoveredRouter {
+  macAddress: string;
+  identity: string;
+  version: string;
+  platform: string;
+  uptime: number;
+  softwareId: string;
+  board: string;
+  unpack: string;
+  ipAddress: string;
+  ipv6Address: string;
+  interfaceName: string;
+  host: string;
+  discoveredAt: string;
+}
+
 export const routerAPI = {
+  // Discover MikroTik routers on the network
+  async discover(): Promise<{ success: boolean; routers: DiscoveredRouter[]; count: number; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/router/discover`);
+    return response.json();
+  },
+
   // Test router connection
   async testConnection(host: string, username: string, password: string, port: number = 8728) {
     const response = await fetch(`${API_BASE_URL}/router/test`, {

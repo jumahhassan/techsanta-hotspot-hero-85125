@@ -3,7 +3,14 @@
     "allow": [
       "Bash(git push)",
       "Bash(npm install mongoose)",
-      "Bash(git add .)"
+      "Bash(git add .)",
+      "Bash(git add render.yaml)",
+      "Bash(git commit -m \"Remove plan from static site config\")",
+      "Bash(npm install:*)",
+      "Bash(npm audit fix:*)",
+      "Bash(npm run build:*)",
+      "WebSearch",
+      "Bash(node --check:*)"
     ],
     "deny": [],
     "ask": []

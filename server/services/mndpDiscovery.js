@@ -1,0 +1,221 @@
+import dgram from 'dgram';
+import { networkInterfaces } from 'os';
+
+const MNDP_PORT = 5678;
+const MNDP_MULTICAST = '255.255.255.255';
+const DISCOVERY_TIMEOUT = 5000; // 5 seconds
+
+/**
+ * Parse MNDP packet to extract router information
+ * MNDP packet structure: Type-Length-Value (TLV) format
+ */
+function parseMNDPPacket(buffer) {
+  const router = {
+    macAddress: null,
+    identity: null,
+    version: null,
+    platform: null,
+    uptime: null,
+    softwareId: null,
+    board: null,
+    unpack: null,
+    ipAddress: null,
+    ipv6Address: null,
+    interfaceName: null,
+  };
+
+  let offset = 0;
+
+  try {
+    while (offset < buffer.length - 1) {
+      const type = buffer.readUInt16LE(offset);
+      offset += 2;
+
+      if (offset >= buffer.length) break;
+
+      const length = buffer.readUInt16LE(offset);
+      offset += 2;
+
+      if (offset + length > buffer.length) break;
+
+      const value = buffer.slice(offset, offset + length);
+
+      // Parse different TLV types based on MNDP specification
+      switch (type) {
+        case 0x0001: // MAC Address
+          router.macAddress = Array.from(value)
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join(':')
+            .toUpperCase();
+          break;
+        case 0x0005: // Identity/Name
+          router.identity = value.toString('utf8').replace(/\0/g, '');
+          break;
+        case 0x0007: // Version
+          router.version = value.toString('utf8').replace(/\0/g, '');
+          break;
+        case 0x0008: // Platform
+          router.platform = value.toString('utf8').replace(/\0/g, '');
+          break;
+        case 0x000a: // Uptime
+          if (length === 4) {
+            router.uptime = value.readUInt32LE(0);
+          }
+          break;
+        case 0x000b: // Software ID
+          router.softwareId = value.toString('utf8').replace(/\0/g, '');
+          break;
+        case 0x000c: // Board name
+          router.board = value.toString('utf8').replace(/\0/g, '');
+          break;
+        case 0x000e: // Unpack
+          router.unpack = value.toString('utf8').replace(/\0/g, '');
+          break;
+        case 0x0010: // IPv4 Address
+          if (length === 4) {
+            router.ipAddress = Array.from(value).join('.');
+          }
+          break;
+        case 0x0011: // IPv6 Address
+          if (length === 16) {
+            const ipv6Parts = [];
+            for (let i = 0; i < 16; i += 2) {
+              ipv6Parts.push(value.readUInt16BE(i).toString(16));
+            }
+            router.ipv6Address = ipv6Parts.join(':');
+          }
+          break;
+        case 0x0012: // Interface name
+          router.interfaceName = value.toString('utf8').replace(/\0/g, '');
+          break;
+      }
+
+      offset += length;
+    }
+  } catch (error) {
+    console.error('Error parsing MNDP packet:', error);
+  }
+
+  return router;
+}
+
+/**
+ * Get all local network interfaces and their broadcast addresses
+ */
+function getLocalInterfaces() {
+  const interfaces = networkInterfaces();
+  const broadcastAddresses = [];
+
+  for (const [name, addrs] of Object.entries(interfaces)) {
+    for (const addr of addrs) {
+      // Only IPv4, not internal (loopback)
+      if (addr.family === 'IPv4' && !addr.internal) {
+        // Calculate broadcast address
+        const ip = addr.address.split('.').map(Number);
+        const netmask = addr.netmask.split('.').map(Number);
+        const broadcast = ip.map((octet, i) => octet | (~netmask[i] & 255));
+
+        broadcastAddresses.push({
+          interface: name,
+          address: addr.address,
+          broadcast: broadcast.join('.'),
+        });
+      }
+    }
+  }
+
+  return broadcastAddresses;
+}
+
+/**
+ * Discover MikroTik routers on the local network using MNDP
+ * @returns {Promise<Array>} Array of discovered routers
+ */
+export async function discoverRouters() {
+  return new Promise((resolve) => {
+    const discoveredRouters = new Map(); // Use Map to avoid duplicates by MAC
+    const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+    // Set up socket options
+    socket.on('error', (err) => {
+      console.error('MNDP Discovery socket error:', err);
+      socket.close();
+      resolve([]);
+    });
+
+    socket.on('message', (msg, rinfo) => {
+      try {
+        const router = parseMNDPPacket(msg);
+
+        // Only add if we got meaningful data
+        if (router.macAddress && router.identity) {
+          // Use source IP from the packet
+          router.host = rinfo.address;
+          router.discoveredAt = new Date().toISOString();
+
+          // Store by MAC to avoid duplicates
+          discoveredRouters.set(router.macAddress, router);
+        }
+      } catch (error) {
+        console.error('Error processing MNDP message:', error);
+      }
+    });
+
+    socket.on('listening', () => {
+      const address = socket.address();
+      console.log(`MNDP Discovery listening on ${address.address}:${address.port}`);
+
+      // Enable broadcast
+      socket.setBroadcast(true);
+
+      // Bind to MNDP port to receive broadcasts
+      console.log('Listening for MNDP broadcasts...');
+    });
+
+    // Bind to MNDP port
+    socket.bind(MNDP_PORT);
+
+    // Stop listening after timeout
+    setTimeout(() => {
+      socket.close();
+      const routers = Array.from(discoveredRouters.values());
+      console.log(`Discovery complete. Found ${routers.length} MikroTik router(s)`);
+      resolve(routers);
+    }, DISCOVERY_TIMEOUT);
+  });
+}
+
+/**
+ * Start passive MNDP listener (for continuous monitoring)
+ * This is optional - for background discovery
+ */
+export function startMNDPListener(callback) {
+  const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+  socket.on('error', (err) => {
+    console.error('MNDP Listener error:', err);
+  });
+
+  socket.on('message', (msg, rinfo) => {
+    try {
+      const router = parseMNDPPacket(msg);
+      if (router.macAddress && router.identity) {
+        router.host = rinfo.address;
+        router.discoveredAt = new Date().toISOString();
+        callback(router);
+      }
+    } catch (error) {
+      console.error('Error processing MNDP message:', error);
+    }
+  });
+
+  socket.on('listening', () => {
+    const address = socket.address();
+    console.log(`MNDP Listener active on ${address.address}:${address.port}`);
+    socket.setBroadcast(true);
+  });
+
+  socket.bind(MNDP_PORT);
+
+  return socket; // Return socket so it can be closed later if needed
+}
