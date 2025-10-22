@@ -145,7 +145,13 @@ export async function discoverRouters() {
 
     socket.on('message', (msg, rinfo) => {
       try {
+        console.log(`📡 Received MNDP packet from ${rinfo.address}:${rinfo.port}`);
+        console.log(`   Packet size: ${msg.length} bytes`);
+        console.log(`   First 32 bytes (hex): ${msg.slice(0, 32).toString('hex')}`);
+
         const router = parseMNDPPacket(msg);
+
+        console.log(`   Parsed data:`, JSON.stringify(router, null, 2));
 
         // Only add if we got meaningful data
         if (router.macAddress && router.identity) {
@@ -155,6 +161,9 @@ export async function discoverRouters() {
 
           // Store by MAC to avoid duplicates
           discoveredRouters.set(router.macAddress, router);
+          console.log(`✅ Added router: ${router.identity} (${rinfo.address})`);
+        } else {
+          console.log(`⚠️  Packet received but no valid MAC/Identity found`);
         }
       } catch (error) {
         console.error('Error processing MNDP message:', error);
