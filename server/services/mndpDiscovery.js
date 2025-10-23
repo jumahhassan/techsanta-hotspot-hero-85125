@@ -36,12 +36,12 @@ function parseMNDPPacket(buffer) {
     console.log(`   Starting parse at offset ${offset}, buffer length: ${buffer.length}`);
 
     while (offset < buffer.length - 3) {
-      const type = buffer.readUInt16LE(offset);
+      const type = buffer.readUInt16BE(offset);
       offset += 2;
 
       if (offset >= buffer.length) break;
 
-      const length = buffer.readUInt16LE(offset);
+      const length = buffer.readUInt16BE(offset);
       offset += 2;
 
       console.log(`   -> Type: 0x${type.toString(16).padStart(4, '0')}, Length: ${length}, Offset: ${offset}`);
