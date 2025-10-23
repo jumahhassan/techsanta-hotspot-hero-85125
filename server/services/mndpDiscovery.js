@@ -128,6 +128,19 @@ function getLocalInterfaces() {
 }
 
 /**
+ * Create MNDP discovery request packet
+ * This triggers MikroTik routers to respond with their information
+ */
+function createMNDPRequest() {
+  // MNDP discovery request is just an empty packet or a minimal packet
+  // MikroTik routers respond to any UDP packet on port 5678
+  const buffer = Buffer.alloc(4);
+  buffer.writeUInt16LE(0, 0); // Type
+  buffer.writeUInt16LE(0, 2); // Length
+  return buffer;
+}
+
+/**
  * Discover MikroTik routers on the local network using MNDP
  * @returns {Promise<Array>} Array of discovered routers
  */
@@ -177,8 +190,55 @@ export async function discoverRouters() {
       // Enable broadcast
       socket.setBroadcast(true);
 
-      // Bind to MNDP port to receive broadcasts
-      console.log('Listening for MNDP broadcasts...');
+      console.log('Sending MNDP discovery requests...');
+
+      // Send MNDP discovery requests to trigger router responses
+      const discoveryPacket = createMNDPRequest();
+      const interfaces = getLocalInterfaces();
+
+      if (interfaces.length === 0) {
+        console.log('⚠️  No network interfaces found. Trying broadcast to 255.255.255.255');
+        // Fallback to general broadcast
+        socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', (err) => {
+          if (err) {
+            console.error('Error sending MNDP broadcast:', err);
+          } else {
+            console.log('📤 Sent MNDP discovery to 255.255.255.255');
+          }
+        });
+      } else {
+        // Send to each network interface's broadcast address
+        interfaces.forEach(iface => {
+          console.log(`📤 Sending MNDP discovery on ${iface.interface} (${iface.address}) to ${iface.broadcast}`);
+          socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, iface.broadcast, (err) => {
+            if (err) {
+              console.error(`Error sending to ${iface.broadcast}:`, err);
+            }
+          });
+        });
+
+        // Also send to general broadcast as fallback
+        socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', (err) => {
+          if (err) {
+            console.error('Error sending MNDP broadcast:', err);
+          } else {
+            console.log('📤 Sent MNDP discovery to 255.255.255.255');
+          }
+        });
+      }
+
+      // Send multiple discovery requests over the discovery period
+      const sendInterval = setInterval(() => {
+        interfaces.forEach(iface => {
+          socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, iface.broadcast, () => {});
+        });
+        socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', () => {});
+      }, 1000); // Send every second
+
+      // Clear interval when discovery completes
+      setTimeout(() => {
+        clearInterval(sendInterval);
+      }, DISCOVERY_TIMEOUT);
     });
 
     // Bind to MNDP port
