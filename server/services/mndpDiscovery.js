@@ -2,12 +2,11 @@ import dgram from 'dgram';
 import { networkInterfaces } from 'os';
 
 const MNDP_PORT = 5678;
-const MNDP_MULTICAST = '255.255.255.255';
 const DISCOVERY_TIMEOUT = 5000; // 5 seconds
 
 /**
  * Parse MNDP packet to extract router information
- * MNDP packet structure: 4-byte header + Type-Length-Value (TLV) format
+ * MNDP uses Little Endian (LE) byte order for TLV fields
  */
 function parseMNDPPacket(buffer) {
   const router = {
@@ -33,26 +32,23 @@ function parseMNDPPacket(buffer) {
     // Skip 4-byte header (sequence number)
     let offset = 4;
 
-    console.log(`   Starting parse at offset ${offset}, buffer length: ${buffer.length}`);
-
     while (offset < buffer.length - 3) {
-      const type = buffer.readUInt16BE(offset);
+      // Read Type and Length as Little Endian (LE)
+      const type = buffer.readUInt16LE(offset);
       offset += 2;
 
       if (offset >= buffer.length) break;
 
-      const length = buffer.readUInt16BE(offset);
+      const length = buffer.readUInt16LE(offset);
       offset += 2;
 
-      console.log(`   -> Type: 0x${type.toString(16).padStart(4, '0')}, Length: ${length}, Offset: ${offset}`);
-
+      // Validate length
       if (offset + length > buffer.length) {
-        console.log(`   -> Overflow detected: offset(${offset}) + length(${length}) > buffer(${buffer.length})`);
+        console.warn(`MNDP packet parsing stopped: invalid length ${length} at offset ${offset}`);
         break;
       }
 
       const value = buffer.slice(offset, offset + length);
-      console.log(`   -> Value (hex): ${value.toString('hex')}`);
 
       // Parse different TLV types based on MNDP specification
       switch (type) {
@@ -62,9 +58,6 @@ function parseMNDPPacket(buffer) {
               .map(b => b.toString(16).padStart(2, '0'))
               .join(':')
               .toUpperCase();
-            console.log(`   -> Parsed MAC: ${router.macAddress}`);
-          } else {
-            console.log(`   -> MAC length mismatch: expected 6, got ${length}`);
           }
           break;
         case 0x0005: // Identity/Name
@@ -112,7 +105,7 @@ function parseMNDPPacket(buffer) {
       offset += length;
     }
   } catch (error) {
-    console.error('Error parsing MNDP packet:', error);
+    console.error('Error parsing MNDP packet:', error.message);
   }
 
   return router;
@@ -148,14 +141,12 @@ function getLocalInterfaces() {
 
 /**
  * Create MNDP discovery request packet
- * This triggers MikroTik routers to respond with their information
  */
 function createMNDPRequest() {
-  // MNDP discovery request is just an empty packet or a minimal packet
-  // MikroTik routers respond to any UDP packet on port 5678
+  // MNDP discovery request is just an empty 4-byte packet
   const buffer = Buffer.alloc(4);
-  buffer.writeUInt16LE(0, 0); // Type
-  buffer.writeUInt16LE(0, 2); // Length
+  buffer.writeUInt16LE(0, 0);
+  buffer.writeUInt16LE(0, 2);
   return buffer;
 }
 
@@ -165,40 +156,32 @@ function createMNDPRequest() {
  */
 export async function discoverRouters() {
   return new Promise((resolve) => {
-    const discoveredRouters = new Map(); // Use Map to avoid duplicates by MAC
+    const discoveredRouters = new Map();
     const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+    let isSocketClosed = false;
 
-    // Set up socket options
     socket.on('error', (err) => {
-      console.error('MNDP Discovery socket error:', err);
-      socket.close();
+      console.error('MNDP socket error:', err.message);
+      if (!isSocketClosed) {
+        isSocketClosed = true;
+        socket.close();
+      }
       resolve([]);
     });
 
     socket.on('message', (msg, rinfo) => {
       try {
-        console.log(`📡 Received MNDP packet from ${rinfo.address}:${rinfo.port}`);
-        console.log(`   Packet size: ${msg.length} bytes`);
-        console.log(`   First 32 bytes (hex): ${msg.slice(0, 32).toString('hex')}`);
-
         const router = parseMNDPPacket(msg);
-
-        console.log(`   Parsed data:`, JSON.stringify(router, null, 2));
 
         // Only add if we got meaningful data
         if (router.macAddress && router.identity) {
-          // Use source IP from the packet
           router.host = rinfo.address;
           router.discoveredAt = new Date().toISOString();
-
-          // Store by MAC to avoid duplicates
           discoveredRouters.set(router.macAddress, router);
-          console.log(`✅ Added router: ${router.identity} (${rinfo.address})`);
-        } else {
-          console.log(`⚠️  Packet received but no valid MAC/Identity found`);
+          console.log(`✅ Discovered: ${router.identity} at ${rinfo.address} (${router.macAddress})`);
         }
       } catch (error) {
-        console.error('Error processing MNDP message:', error);
+        console.error('Error processing MNDP message:', error.message);
       }
     });
 
@@ -206,82 +189,65 @@ export async function discoverRouters() {
       const address = socket.address();
       console.log(`MNDP Discovery listening on ${address.address}:${address.port}`);
 
-      // Enable broadcast
-      socket.setBroadcast(true);
+      try {
+        socket.setBroadcast(true);
+      } catch (err) {
+        console.error('Failed to enable broadcast:', err.message);
+      }
 
-      console.log('Sending MNDP discovery requests...');
-
-      // Send MNDP discovery requests to trigger router responses
       const discoveryPacket = createMNDPRequest();
       const interfaces = getLocalInterfaces();
 
-      if (interfaces.length === 0) {
-        console.log('⚠️  No network interfaces found. Trying broadcast to 255.255.255.255');
-        // Fallback to general broadcast
-        socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', (err) => {
-          if (err) {
-            console.error('Error sending MNDP broadcast:', err);
-          } else {
-            console.log('📤 Sent MNDP discovery to 255.255.255.255');
-          }
-        });
-      } else {
-        // Send to each network interface's broadcast address
-        interfaces.forEach(iface => {
-          console.log(`📤 Sending MNDP discovery on ${iface.interface} (${iface.address}) to ${iface.broadcast}`);
-          socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, iface.broadcast, (err) => {
-            if (err) {
-              console.error(`Error sending to ${iface.broadcast}:`, err);
-            }
+      const sendDiscovery = () => {
+        if (isSocketClosed) return;
+
+        if (interfaces.length === 0) {
+          socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', () => {});
+        } else {
+          // Send to each interface's broadcast address
+          interfaces.forEach(iface => {
+            socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, iface.broadcast, () => {});
           });
-        });
+          // Also send to general broadcast
+          socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', () => {});
+        }
+      };
 
-        // Also send to general broadcast as fallback
-        socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', (err) => {
-          if (err) {
-            console.error('Error sending MNDP broadcast:', err);
-          } else {
-            console.log('📤 Sent MNDP discovery to 255.255.255.255');
-          }
-        });
-      }
+      // Send immediately
+      sendDiscovery();
 
-      // Send multiple discovery requests over the discovery period
-      const sendInterval = setInterval(() => {
-        interfaces.forEach(iface => {
-          socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, iface.broadcast, () => {});
-        });
-        socket.send(discoveryPacket, 0, discoveryPacket.length, MNDP_PORT, '255.255.255.255', () => {});
-      }, 1000); // Send every second
+      // Send every second during discovery period
+      const sendInterval = setInterval(sendDiscovery, 1000);
 
-      // Clear interval when discovery completes
       setTimeout(() => {
         clearInterval(sendInterval);
       }, DISCOVERY_TIMEOUT);
     });
 
-    // Bind to MNDP port
-    socket.bind(MNDP_PORT);
+    // Bind to MNDP port on all interfaces
+    socket.bind(MNDP_PORT, '0.0.0.0');
 
-    // Stop listening after timeout
+    // Stop after timeout
     setTimeout(() => {
-      socket.close();
-      const routers = Array.from(discoveredRouters.values());
-      console.log(`Discovery complete. Found ${routers.length} MikroTik router(s)`);
-      resolve(routers);
+      if (!isSocketClosed) {
+        isSocketClosed = true;
+        socket.close();
+        const routers = Array.from(discoveredRouters.values());
+        console.log(`MNDP Discovery complete. Found ${routers.length} router(s)`);
+        resolve(routers);
+      }
     }, DISCOVERY_TIMEOUT);
   });
 }
 
 /**
  * Start passive MNDP listener (for continuous monitoring)
- * This is optional - for background discovery
  */
 export function startMNDPListener(callback) {
   const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
 
   socket.on('error', (err) => {
-    console.error('MNDP Listener error:', err);
+    console.error('MNDP Listener error:', err.message);
   });
 
   socket.on('message', (msg, rinfo) => {
@@ -293,7 +259,7 @@ export function startMNDPListener(callback) {
         callback(router);
       }
     } catch (error) {
-      console.error('Error processing MNDP message:', error);
+      console.error('Error processing MNDP message:', error.message);
     }
   });
 
@@ -303,7 +269,7 @@ export function startMNDPListener(callback) {
     socket.setBroadcast(true);
   });
 
-  socket.bind(MNDP_PORT);
+  socket.bind(MNDP_PORT, '0.0.0.0');
 
-  return socket; // Return socket so it can be closed later if needed
+  return socket;
 }
