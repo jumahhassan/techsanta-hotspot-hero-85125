@@ -7,7 +7,7 @@ const DISCOVERY_TIMEOUT = 5000; // 5 seconds
 
 /**
  * Parse MNDP packet to extract router information
- * MNDP packet structure: Type-Length-Value (TLV) format
+ * MNDP packet structure: 4-byte header + Type-Length-Value (TLV) format
  */
 function parseMNDPPacket(buffer) {
   const router = {
@@ -24,10 +24,16 @@ function parseMNDPPacket(buffer) {
     interfaceName: null,
   };
 
-  let offset = 0;
+  // Skip empty packets (our own discovery requests echoed back)
+  if (buffer.length <= 4) {
+    return router;
+  }
 
   try {
-    while (offset < buffer.length - 1) {
+    // Skip 4-byte header (sequence number)
+    let offset = 4;
+
+    while (offset < buffer.length - 3) {
       const type = buffer.readUInt16LE(offset);
       offset += 2;
 
@@ -43,10 +49,12 @@ function parseMNDPPacket(buffer) {
       // Parse different TLV types based on MNDP specification
       switch (type) {
         case 0x0001: // MAC Address
-          router.macAddress = Array.from(value)
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join(':')
-            .toUpperCase();
+          if (length === 6) {
+            router.macAddress = Array.from(value)
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join(':')
+              .toUpperCase();
+          }
           break;
         case 0x0005: // Identity/Name
           router.identity = value.toString('utf8').replace(/\0/g, '');
