@@ -33,6 +33,8 @@ function parseMNDPPacket(buffer) {
     // Skip 4-byte header (sequence number)
     let offset = 4;
 
+    console.log(`   Starting parse at offset ${offset}, buffer length: ${buffer.length}`);
+
     while (offset < buffer.length - 3) {
       const type = buffer.readUInt16LE(offset);
       offset += 2;
@@ -42,9 +44,15 @@ function parseMNDPPacket(buffer) {
       const length = buffer.readUInt16LE(offset);
       offset += 2;
 
-      if (offset + length > buffer.length) break;
+      console.log(`   -> Type: 0x${type.toString(16).padStart(4, '0')}, Length: ${length}, Offset: ${offset}`);
+
+      if (offset + length > buffer.length) {
+        console.log(`   -> Overflow detected: offset(${offset}) + length(${length}) > buffer(${buffer.length})`);
+        break;
+      }
 
       const value = buffer.slice(offset, offset + length);
+      console.log(`   -> Value (hex): ${value.toString('hex')}`);
 
       // Parse different TLV types based on MNDP specification
       switch (type) {
@@ -54,6 +62,9 @@ function parseMNDPPacket(buffer) {
               .map(b => b.toString(16).padStart(2, '0'))
               .join(':')
               .toUpperCase();
+            console.log(`   -> Parsed MAC: ${router.macAddress}`);
+          } else {
+            console.log(`   -> MAC length mismatch: expected 6, got ${length}`);
           }
           break;
         case 0x0005: // Identity/Name
